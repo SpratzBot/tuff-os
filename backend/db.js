@@ -3,11 +3,17 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const dataDir = path.resolve(process.env.DATA_DIR || './data');
+// Vercel serverless functions have a read-only project filesystem. /tmp is
+// writable there, but it is ephemeral, so this SQLite database is only a
+// compatibility/local-development store. Production persistence will move
+// to PostgreSQL in the next backend phase.
+const dataDir = path.resolve(
+  process.env.DATA_DIR || (process.env.VERCEL === '1' ? '/tmp/tuffos-data' : './data')
+);
 fs.mkdirSync(dataDir, { recursive: true });
 
 export const db = new Database(path.join(dataDir, 'tuffos.sqlite'));
-db.pragma('journal_mode = WAL');
+if (process.env.VERCEL !== '1') db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 db.exec(`
