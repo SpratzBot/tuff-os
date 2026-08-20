@@ -1,195 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication</title>
-    <!-- SweetAlert2 Library -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --card-bg: #111111;
-            --border: #262626;
-            --text-main: #ffffff;
-            --text-muted: #737373;
-            --accent: #ffffff;
-        }
-
-        /* Fixes the white background issue when zooming/scrolling */
-        html {
-            background-color: var(--bg);
-            height: 100%;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: 'Inter', -apple-system, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background: radial-gradient(circle at center, #171717 0%, #0a0a0a 100%);
-            animation: fadeIn 1s ease forwards;
-        }
-
-        /* --- Premium SweetAlert Styling --- */
-        .swal2-backdrop-show { backdrop-filter: blur(8px) !important; background: rgba(0, 0, 0, 0.75) !important; }
-        .premium-swal { background: #111111 !important; border: 1px solid var(--border) !important; border-radius: 24px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important; padding: 2.5rem 2rem 2rem 2rem !important; color: #ffffff !important; width: 340px !important; }
-        .premium-swal-title { font-family: 'Inter', sans-serif !important; font-size: 1.25rem !important; font-weight: 600 !important; margin-bottom: 0.5rem !important; }
-        .premium-swal-text { color: #a3a3a3 !important; font-size: 0.95rem !important; margin-bottom: 2rem !important; }
-        .premium-swal-icon { border: none !important; color: #ffffff !important; margin: 0 auto 1.5rem auto !important; animation: pulse-glow 2s infinite ease-in-out !important; }
-        
-        .hourglass-spin { animation: spin-glass 3s infinite cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes spin-glass { 0% { transform: rotate(0deg); } 40% { transform: rotate(180deg); } 100% { transform: rotate(180deg); } }
-        @keyframes pulse-glow { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255,255,255,0.1)); } 50% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.4)); } }
-        
-        .swal2-actions { display: flex !important; flex-direction: row !important; gap: 10px !important; width: 100% !important; margin: 0 !important; }
-        .premium-btn-confirm, .premium-btn-cancel { flex: 1 !important; padding: 12px 0 !important; border-radius: 12px !important; font-weight: 500 !important; font-size: 0.9rem !important; cursor: pointer; transition: all 0.2s ease !important; font-family: 'Inter', sans-serif !important; display: inline-flex !important; justify-content: center !important; align-items: center !important; min-width: 100px !important; }
-        
-        .premium-btn-confirm { background: #ffffff !important; color: #000000 !important; border: none !important; }
-        .premium-btn-confirm:focus { box-shadow: none !important; outline: none !important; }
-        .premium-btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2); }
-        
-        .premium-btn-cancel { background: transparent !important; color: #ffffff !important; border: 1px solid #333 !important; }
-        .premium-btn-cancel:focus { box-shadow: none !important; outline: none !important; }
-        .premium-btn-cancel.active { border-color: #ffffff !important; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important; }
-        .premium-btn-cancel:hover { background: #1a1a1a !important; border-color: #555 !important; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .fade-out { animation: fadeOut 0.5s ease forwards; }
-        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
-
-        #welcomeToast { position: fixed; top: 15px; background: #111111; border: 1px solid var(--border); padding: 8px 24px; border-radius: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; opacity: 0; transform: translateY(-20px); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        #welcomeToast.show { opacity: 1; transform: translateY(0); }
-        #welcomeToast img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        #welcomeToast span { font-weight: 500; font-size: 14px; }
-
-        .login-card { background: var(--card-bg); padding: 40px; border-radius: 20px; width: 100%; max-width: 340px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        h2 { font-size: 20px; font-weight: 600; margin: 0 0 8px 0; }
-        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
-        .input-group { margin-bottom: 20px; }
-        label { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 8px; }
-        input { width: 100%; padding: 12px 16px; background: #0f0f0f; border: 1px solid var(--border); border-radius: 10px; color: var(--text-main); font-size: 14px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
-        .btn-primary { background: var(--accent); color: #000; }
-        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-main); margin-top: 12px; }
-        .btn-secondary.active { border-color: #ffffff; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15); }
-        .separator { display: flex; align-items: center; color: var(--text-muted); font-size: 11px; margin: 24px 0; text-transform: uppercase; }
-        .separator::before, .separator::after { content: ""; flex: 1; border-top: 1px solid var(--border); margin: 0 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07080b">
+  <title>TuffOS — Sign in</title>
+  <link rel="stylesheet" href="../assets/tuffos.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box}
+    .auth-shell{width:min(440px,100%)}
+    .auth-card{padding:34px;border-radius:28px}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:30px}
+    .brand img{width:44px;height:44px}
+    .brand strong{font-size:20px;letter-spacing:-.04em}
+    .auth-title{font-size:32px;letter-spacing:-.05em;margin:0 0 8px}
+    .auth-subtitle{margin:0 0 28px;color:var(--muted);line-height:1.5}
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+    .field input{width:100%;box-sizing:border-box;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text);border-radius:14px;padding:14px 15px;outline:none}
+    .field input:focus{border-color:rgba(255,255,255,.32);box-shadow:0 0 0 4px rgba(255,255,255,.04)}
+    .auth-btn{width:100%;border:0;border-radius:14px;padding:14px;font-weight:700;cursor:pointer}
+    .primary{background:#fff;color:#050505}
+    .secondary{margin-top:10px;background:transparent;color:#fff;border:1px solid var(--border)}
+    .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;text-transform:uppercase;margin:22px 0}
+    .divider:before,.divider:after{content:"";height:1px;background:var(--border);flex:1}
+    .status{min-height:20px;margin-top:16px;font-size:13px;color:var(--muted);text-align:center}
+    .status.error{color:#ff9b9b}.status.success{color:#b9ffce}
+  </style>
 </head>
 <body>
+  <main class="auth-shell">
+    <section class="panel auth-card">
+      <div class="brand">
+        <img src="../assets/tuffos-mark.svg" alt="TuffOS">
+        <strong>TuffOS</strong>
+      </div>
+      <h1 class="auth-title">Welcome back.</h1>
+      <p class="auth-subtitle">Sign in to your TuffOS workspace. Username accounts use the existing TuffOS avatar until you connect Discord.</p>
 
-    <div id="welcomeToast">
-        <img src="../files/images/user.png" alt="Avatar">
-        <span id="welcomeText">Welcome back</span>
-    </div>
-
-    <div class="login-card" id="loginCard">
-        <h2>Welcome back to Tuff</h2>
-        <p class="subtitle">Enter your details to continue</p>
-        <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="diddy.blud">
+      <form id="usernameForm">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" autocomplete="username" maxlength="15" placeholder="your.username" required>
         </div>
-        <button type="button" class="btn-primary" id="signInBtn">Sign In</button>
-        <div class="separator">Or</div>
-        <button type="button" class="btn-secondary" id="discordBtn" aria-pressed="false">Login With Discord</button>
-    </div>
+        <button class="auth-btn primary" type="submit">Continue with username</button>
+      </form>
 
-    <script>
-        const signInBtn = document.getElementById('signInBtn');
-        const usernameInput = document.getElementById('username');
-        const loginCard = document.getElementById('loginCard');
-        const discordBtn = document.getElementById('discordBtn');
-        const welcomeToast = document.getElementById('welcomeToast');
-        const welcomeText = document.getElementById('welcomeText');
-        const loginSound = new Audio('../files/mp3/login.mp3');
+      <div class="divider">or</div>
+      <button class="auth-btn secondary" id="discordBtn" type="button">Continue with Discord</button>
+      <div class="status" id="status" aria-live="polite"></div>
+    </section>
+  </main>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('username');
-            if (savedUser) {
-                Swal.fire({
-                    title: 'Session Found',
-                    html: `Would you like to continue as <b style="color: #fff; font-weight: 600;">@${savedUser}</b>?`,
-                    iconHtml: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="hourglass-spin"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l-4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>`,
-                    showCancelButton: true,
-                    buttonsStyling: false,
-                    confirmButtonText: 'Continue',
-                    cancelButtonText: 'Sign out',
-                    customClass: { 
-                        popup: 'premium-swal', 
-                        title: 'premium-swal-title',
-                        htmlContainer: 'premium-swal-text',
-                        icon: 'premium-swal-icon',
-                        confirmButton: 'premium-btn-confirm', 
-                        cancelButton: 'premium-btn-cancel' 
-                    },
-                    didRender: (popup) => {
-                        const cancelBtn = popup.querySelector('.premium-btn-cancel');
-                        cancelBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            cancelBtn.classList.add('active');
-                        });
-                        document.addEventListener('click', () => {
-                            cancelBtn.classList.remove('active');
-                        });
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) showLoggedInState(savedUser, true);
-                    else localStorage.removeItem('username');
-                });
-            }
+  <script>
+    const form = document.getElementById('usernameForm');
+    const username = document.getElementById('username');
+    const discordBtn = document.getElementById('discordBtn');
+    const status = document.getElementById('status');
+
+    function setStatus(message, kind='') {
+      status.textContent = message;
+      status.className = `status ${kind}`;
+    }
+
+    async function existingSession() {
+      try {
+        const response = await fetch('../api/auth/me', { credentials: 'include' });
+        const data = await response.json();
+        if (data.authenticated) window.location.replace('../home/');
+      } catch {}
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const value = username.value.trim();
+      if (!/^[a-zA-Z0-9._]{2,15}$/.test(value)) {
+        setStatus('Use 2–15 letters, numbers, dots or underscores.', 'error');
+        return;
+      }
+
+      setStatus('Signing you in…');
+      try {
+        const response = await fetch('../api/auth/username', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username: value })
         });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to sign in.');
+        setStatus(`Welcome, ${data.user.username}.`, 'success');
+        window.setTimeout(() => window.location.replace('../home/'), 350);
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    });
 
-        function showLoggedInState(username, playSound) {
-            welcomeText.innerText = `Welcome, ${username}`;
-            loginCard.classList.add('fade-out');
-            setTimeout(() => { loginCard.style.display = 'none'; }, 500);
-            if (playSound) loginSound.play();
-            setTimeout(() => {
-                welcomeToast.classList.add('show');
-                setTimeout(() => { welcomeToast.classList.remove('show'); }, 4000);
-            }, 1000);
-        }
+    discordBtn.addEventListener('click', () => {
+      setStatus('Opening Discord…');
+      window.location.href = '../api/auth/discord';
+    });
 
-        function showError(title, text) {
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: 'error',
-                buttonsStyling: false,
-                confirmButtonText: 'OK',
-                customClass: { 
-                    popup: 'premium-swal', 
-                    title: 'premium-swal-title',
-                    htmlContainer: 'premium-swal-text',
-                    confirmButton: 'premium-btn-confirm'
-                }
-            });
-        }
-
-        signInBtn.addEventListener('click', () => {
-            const val = usernameInput.value.trim();
-            const validPattern = /^[a-zA-Z0-9._]+$/;
-            if (val === "") {
-                showError('Error', 'Please enter a username to continue.');
-            } else if (val.length < 2 || val.length > 15) {
-                showError('Invalid Length', 'Username must be between 2 and 15 characters.');
-            } else if (!validPattern.test(val)) {
-                showError('Invalid Characters', 'Username can only contain letters, numbers, "." and "_".');
-            } else {
-                localStorage.setItem('username', val);
-                showLoggedInState(val, true);
-            }
-        });
-
-        discordBtn.addEventListener('click', (e) => { e.stopPropagation(); discordBtn.classList.add('active'); });
-        document.addEventListener('click', () => { discordBtn.classList.remove('active'); });
-    </script>
+    existingSession();
+  </script>
 </body>
 </html>
